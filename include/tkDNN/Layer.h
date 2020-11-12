@@ -54,6 +54,7 @@ public:
 
     int id = 0;
     bool final;        //if the layer is the final one
+    std::string block_name;
 
     std::string getLayerName() {
         layerType_t type = getLayerType();
@@ -223,8 +224,8 @@ class Activation : public Layer {
 public:
     int act_mode;
     float ceiling;
-
-    Activation(Network *net, int act_mode, const float ceiling=0.0); 
+    Activation(Network *net, int act_mode, const float ceiling=0.0);
+    Activation(Network *net, int act_mode,  std::string block_name, const float ceiling=0.0); 
     virtual ~Activation();
     virtual layerType_t getLayerType() { 
         if(act_mode == CUDNN_ACTIVATION_CLIPPED_RELU)
@@ -259,8 +260,11 @@ class Conv2d : public LayerWgs {
 
 public:
     Conv2d( Network *net, int out_ch, int kernelH, int kernelW, 
+                    int strideH, int strideW, int paddingH, int paddingW,
+                    std::string fname_weights, bool batchnorm = false, bool deConv = false, int groups = 1, bool additional_bias=false);
+    Conv2d( Network *net, int out_ch, int kernelH, int kernelW, 
                 int strideH, int strideW, int paddingH, int paddingW,
-                std::string fname_weights, bool batchnorm = false, bool deConv = false, int groups = 1, bool additional_bias=false);
+                std::string fname_weights, std::string block_name, bool batchnorm = false, bool deConv = false, int groups = 1, bool additional_bias=false);
     virtual ~Conv2d();
     virtual layerType_t getLayerType() { return LAYER_CONV2D; };
 
@@ -475,6 +479,10 @@ public:
             int strideH, int strideW, 
             int paddingH, int paddingW,
             tkdnnPoolingMode_t pool_mode);
+    Pooling(Network *net, int winH, int winW, 
+        int strideH, int strideW, 
+        int paddingH, int paddingW,
+        tkdnnPoolingMode_t pool_mode, std::string block_name);
     virtual ~Pooling();
     virtual layerType_t getLayerType() { return LAYER_POOLING; };
 
@@ -548,6 +556,7 @@ class Shortcut : public Layer {
 
 public:
     Shortcut(Network *net, Layer *backLayer); 
+    Shortcut(Network *net, Layer *backLayer, std::string block_name); 
     virtual ~Shortcut();
     virtual layerType_t getLayerType() { return LAYER_SHORTCUT; };
 
@@ -565,6 +574,7 @@ class Upsample : public Layer {
 
 public:
     Upsample(Network *net, int stride);
+    Upsample(Network *net, int stride, std::string block_name);
     virtual ~Upsample();
     virtual layerType_t getLayerType() { return LAYER_UPSAMPLE; };
 

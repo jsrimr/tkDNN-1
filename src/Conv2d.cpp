@@ -134,7 +134,6 @@ void Conv2d::inferCUDNN(dnnType* srcData, bool back) {
         }
     }
 }
-
 Conv2d::Conv2d( Network *net, int out_ch, int kernelH, int kernelW,
                 int strideH, int strideW, int paddingH, int paddingW,
                 std::string fname_weights, bool batchnorm, bool deConv, int groups, bool additional_bias) :
@@ -150,6 +149,47 @@ Conv2d::Conv2d( Network *net, int out_ch, int kernelH, int kernelW,
     this->deConv = deConv;
     this->groups = groups;
     this->additional_bias = additional_bias;
+
+    if(!deConv) {
+        output_dim.n = input_dim.n;
+        output_dim.c = out_ch;
+        output_dim.h = (input_dim.h + 2 * paddingH - kernelH) / strideH + 1;
+        output_dim.w = (input_dim.w + 2 * paddingW - kernelW) / strideW + 1;
+        output_dim.l = 1;
+    } else {
+        output_dim.n = input_dim.n;
+        output_dim.c = out_ch;
+        output_dim.h = ((input_dim.h-1) * strideH) - 2*paddingH + kernelH;
+        output_dim.w = ((input_dim.w-1) * strideW) - 2*paddingW + kernelW;
+        output_dim.l = 1;
+    }
+    initCUDNN(deConv);
+
+    // allocate warkspace
+    if (ws_sizeInBytes!=0) {
+        checkCuda( cudaMalloc(&workSpace, ws_sizeInBytes) );
+    }
+
+    //allocate data for infer result
+    checkCuda( cudaMalloc(&dstData, output_dim.tot()*sizeof(dnnType)) );
+}
+
+Conv2d::Conv2d( Network *net, int out_ch, int kernelH, int kernelW,
+                int strideH, int strideW, int paddingH, int paddingW,
+                std::string fname_weights, std::string block_name, bool batchnorm, bool deConv, int groups, bool additional_bias) :
+    
+    LayerWgs(net, net->getOutputDim().c, out_ch, kernelH, kernelW, 1, 
+             fname_weights, batchnorm, additional_bias, deConv, groups) {
+    this->kernelH = kernelH;
+    this->kernelW = kernelW;
+    this->strideH = strideH;
+    this->strideW = strideW;
+    this->paddingH = paddingH;
+    this->paddingW = paddingW;
+    this->deConv = deConv;
+    this->groups = groups;
+    this->additional_bias = additional_bias;
+    this->block_name = block_name;
 
     if(!deConv) {
         output_dim.n = input_dim.n;

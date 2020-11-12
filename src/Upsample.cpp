@@ -5,9 +5,10 @@
 
 namespace tk { namespace dnn {
 
-Upsample::Upsample(Network *net, int stride) : Layer(net) {
+Upsample::Upsample(Network *net, int stride, std::string block_name) : Layer(net) {
 
     this->stride = stride;
+    this->block_name = block_name;
 
     output_dim.n = input_dim.n;
     output_dim.c = input_dim.c;

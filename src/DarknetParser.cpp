@@ -87,7 +87,8 @@ namespace tk { namespace dnn {
         }
         else if(name.find("layers") !=  std::string::npos)
             fields.layers = fromStringToIntVec(value, ',');
-
+        else if(name.find("block_name") !=  std::string::npos)
+            fields.block_name = value;
         else
             std::cout<<"Not supported field: "<<line<<std::endl;
         return true;
@@ -116,19 +117,19 @@ namespace tk { namespace dnn {
             if (!use_random_weights) wgs = wgs_path + "/c" + std::to_string(netLayers.size()) + ".bin";
             //printf("%d (%d,%d) (%d,%d) (%d,%d) %s %d %d\n", f.filters, f.size_x, f.size_y, f.stride_x, f.stride_y, f.padding_x, f.padding_y, wgs.c_str(), f.batch_normalize, f.groups);
             tk::dnn::Conv2d *l= new tk::dnn::Conv2d(net, f.filters, f.size_x, f.size_y, f.stride_x, 
-                                f.stride_y, f.padding_x, f.padding_y, wgs, f.batch_normalize, false, f.groups);
+                                f.stride_y, f.padding_x, f.padding_y, wgs , f.block_name, f.batch_normalize, false, f.groups, false);
             netLayers.push_back(l);
         } else if(f.type == "maxpool") {
             if(f.stride_x == 1 && f.stride_y == 1)
                 netLayers.push_back(new tk::dnn::Pooling(net, f.size_x, f.size_y, f.stride_x, f.stride_y, 
-                    f.padding_x, f.padding_y, tk::dnn::POOLING_MAX_FIXEDSIZE));
+                    f.padding_x, f.padding_y, tk::dnn::POOLING_MAX_FIXEDSIZE, f.block_name));
             else
                 netLayers.push_back(new tk::dnn::Pooling(net, f.size_x, f.size_y, f.stride_x, f.stride_y, 
-                    f.padding_x, f.padding_y, tk::dnn::POOLING_MAX));
+                    f.padding_x, f.padding_y, tk::dnn::POOLING_MAX, f.block_name));
 
         } else if(f.type == "avgpool") {
             netLayers.push_back(new tk::dnn::Pooling(net, f.size_x, f.size_y, f.stride_x, f.stride_y, 
-                f.padding_x, f.padding_y, tk::dnn::POOLING_AVERAGE));
+                f.padding_x, f.padding_y, tk::dnn::POOLING_AVERAGE, f.block_name));
 
         } else if(f.type == "shortcut") {
             if(f.layers.size() != 1) FatalError("no layers to shortcut\n");
@@ -137,10 +138,10 @@ namespace tk { namespace dnn {
                 layerIdx = netLayers.size() + layerIdx; 
             if(layerIdx < 0 || layerIdx >= netLayers.size()) FatalError("impossible to shortcut\n");
             //std::cout<<"shortcut to "<<layerIdx<<" "<<netLayers[layerIdx]->getLayerName()<<"\n";
-            netLayers.push_back(new tk::dnn::Shortcut(net, netLayers[layerIdx]));
+            netLayers.push_back(new tk::dnn::Shortcut(net, netLayers[layerIdx], f.block_name));
 
         } else if(f.type == "upsample") {
-            netLayers.push_back(new tk::dnn::Upsample(net, f.stride_x));
+            netLayers.push_back(new tk::dnn::Upsample(net, f.stride_x, f.block_name));
 
         } else if(f.type == "route") {
             if(f.layers.size() == 0) FatalError("no layers to Route\n");
@@ -181,7 +182,7 @@ namespace tk { namespace dnn {
             else if(f.activation == "leaky") act = tk::dnn::ACTIVATION_LEAKY;
             else if(f.activation == "mish") act = tk::dnn::ACTIVATION_MISH;
             else { FatalError("activation not supported: " + f.activation); }
-            netLayers[netLayers.size()-1] = new tk::dnn::Activation(net, act);
+            netLayers[netLayers.size()-1] = new tk::dnn::Activation(net, act, f.block_name);
         };
     }
 

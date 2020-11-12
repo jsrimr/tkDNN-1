@@ -27,6 +27,7 @@ namespace tk { namespace dnn {
         float scale_xy = 1;
         std::vector<int> layers;
         std::string activation = "linear";
+        std::string block_name = "";
 
         friend std::ostream& operator<<(std::ostream& os, const darknetFields_t& f){
             os << f.width << " " << f.height << " " << f.channels << " " << f.batch_normalize<< " " << f.filters << " "  << f.activation<< " " << f.scale_xy;

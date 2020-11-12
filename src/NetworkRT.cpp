@@ -272,10 +272,10 @@ NetworkRT::NetworkRT(Network *net, const char *name, int start_index, int end_in
 				{
 					std::cout << "GPU layer: " << i << ", name: " << l->getLayerName() << std::endl;
 				}
-				Ilay->setName( (l->getLayerName() + std::to_string(i)).c_str() );
+				Ilay->setName( (l->getLayerName() + std::to_string(i) + "/" + l->block_name + "_imgsize" + std::to_string(l->output_dim.h)).c_str() );
 
 				input = Ilay->getOutput(0);
-				input->setName( (l->getLayerName() + std::to_string(i) + "_out").c_str() );
+				input->setName( (l->getLayerName() + std::to_string(i) + "/" + l->block_name + "_imgsize" + std::to_string(l->output_dim.h)+ "_out").c_str() );
 			}
 
 			if(l->final) {
@@ -446,10 +446,10 @@ NetworkRT::NetworkRT(Network *net, const char *name) {
                 Ilay->setPrecision(DataType::kINT8);
             }
 #endif
-            Ilay->setName( (l->getLayerName() + std::to_string(i)).c_str() );
+            Ilay->setName( (l->getLayerName() + std::to_string(i) + "/" + l->block_name + "_imgsize" + std::to_string(l->output_dim.h)).c_str() );
             
             input = Ilay->getOutput(0);
-            input->setName( (l->getLayerName() + std::to_string(i) + "_out").c_str() );
+            input->setName( (l->getLayerName() + std::to_string(i) + "/" + l->block_name + "_imgsize" + std::to_string(l->output_dim.h)+ "_out").c_str() );
             
             if(l->final)
                 networkRT->markOutput(*input);
