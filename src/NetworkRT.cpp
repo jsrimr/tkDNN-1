@@ -272,10 +272,10 @@ NetworkRT::NetworkRT(Network *net, const char *name, int start_index, int end_in
 				{
 					std::cout << "GPU layer: " << i << ", name: " << l->getLayerName() << std::endl;
 				}
-				Ilay->setName( (l->getLayerName() + std::to_string(i) + "/" + l->block_name + "_imgsize" + std::to_string(l->output_dim.h)).c_str() );
+				Ilay->setName( (l->getLayerName() + std::to_string(i) + "/" + l->block_name + "_imgsize" + std::to_string(l->input_dim.h)).c_str() );
 
 				input = Ilay->getOutput(0);
-				input->setName( (l->getLayerName() + std::to_string(i) + "/" + l->block_name + "_imgsize" + std::to_string(l->output_dim.h)+ "_out").c_str() );
+				input->setName( (l->getLayerName() + std::to_string(i) + "/" + l->block_name + "_imgsize" + std::to_string(l->input_dim.h)+ "_out").c_str() );
 			}
 
 			if(l->final) {
@@ -446,10 +446,10 @@ NetworkRT::NetworkRT(Network *net, const char *name) {
                 Ilay->setPrecision(DataType::kINT8);
             }
 #endif
-            Ilay->setName( (l->getLayerName() + std::to_string(i) + "/" + l->block_name + "_imgsize" + std::to_string(l->output_dim.h)).c_str() );
+            Ilay->setName( (l->getLayerName() + std::to_string(i) + "/" + l->block_name + "_imgsize" + std::to_string(l->input_dim.h)).c_str() );
             
             input = Ilay->getOutput(0);
-            input->setName( (l->getLayerName() + std::to_string(i) + "/" + l->block_name + "_imgsize" + std::to_string(l->output_dim.h)+ "_out").c_str() );
+            input->setName( (l->getLayerName() + std::to_string(i) + "/" + l->block_name + "_imgsize" + std::to_string(l->input_dim.h)+ "_out").c_str() );
             
             if(l->final)
                 networkRT->markOutput(*input);
@@ -536,7 +536,8 @@ dnnType* NetworkRT::infer(dataDim_t &dim, dnnType* data) {
     }
 
     checkCuda(cudaMemcpyAsync(buffersRT[buf_input_idx], data, batches*input_dim.tot()*sizeof(dnnType), cudaMemcpyDeviceToDevice, stream));
-    contextRT->enqueue(batches, buffersRT, stream, nullptr);
+    // contextRT->enqueue(batches, buffersRT, stream, nullptr);
+    contextRT->execute(batches, buffersRT);
     checkCuda(cudaMemcpyAsync(output, buffersRT[buf_output_idx], batches*output_dim.tot()*sizeof(dnnType), cudaMemcpyDeviceToDevice, stream));
     checkCuda(cudaStreamSynchronize(stream));
 
@@ -547,7 +548,8 @@ dnnType* NetworkRT::infer(dataDim_t &dim, dnnType* data) {
 }
 
 void NetworkRT::enqueue(int batchSize) {
-    contextRT->enqueue(batchSize, buffersRT, stream, nullptr);
+    // contextRT->enqueue(batchSize, buffersRT, stream, nullptr);
+    contextRT->execute(batchSize, buffersRT);
 }
 
 ILayer* NetworkRT::convert_layer(ITensor *input, Layer *l) {
