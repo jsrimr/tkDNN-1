@@ -535,10 +535,13 @@ dnnType* NetworkRT::infer(dataDim_t &dim, dnnType* data) {
         FatalError("input batch size too large");
     }
 
-    checkCuda(cudaMemcpyAsync(buffersRT[buf_input_idx], data, batches*input_dim.tot()*sizeof(dnnType), cudaMemcpyDeviceToDevice, stream));
+    // checkCuda(cudaMemcpyAsync(buffersRT[buf_input_idx], data, batches*input_dim.tot()*sizeof(dnnType), cudaMemcpyDeviceToDevice, stream));
+    checkCuda(cudaMemcpy(buffersRT[buf_input_idx], data, batches*input_dim.tot()*sizeof(dnnType), cudaMemcpyDeviceToDevice));
+
     // contextRT->enqueue(batches, buffersRT, stream, nullptr);
     contextRT->execute(batches, buffersRT);
-    checkCuda(cudaMemcpyAsync(output, buffersRT[buf_output_idx], batches*output_dim.tot()*sizeof(dnnType), cudaMemcpyDeviceToDevice, stream));
+    // checkCuda(cudaMemcpyAsync(output, buffersRT[buf_output_idx], batches*output_dim.tot()*sizeof(dnnType), cudaMemcpyDeviceToDevice, stream));
+    checkCuda(cudaMemcpy(output, buffersRT[buf_output_idx], batches*output_dim.tot()*sizeof(dnnType), cudaMemcpyDeviceToDevice));
     checkCuda(cudaStreamSynchronize(stream));
 
     dim = output_dim;
