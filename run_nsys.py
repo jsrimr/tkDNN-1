@@ -3,8 +3,9 @@ import glob
 import subprocess
 
 # cfgs = glob.glob(r"tests/darknet/cfg/target_*.cfg")
+cfgs = glob.glob(r"tests/darknet/cfg/effnet_*.cfg")
 # cfgs = glob.glob(r"tests/darknet/cfg/mb_*.cfg")
-cfgs = glob.glob(r"tests/darknet/cfg/*.cfg")
+# cfgs = glob.glob(r"tests/darknet/cfg/*.cfg")
 # cfgs = glob.glob(r"tests/darknet/new_cfg/*")
 
 n = 100 # 몇번 반복할 것인지

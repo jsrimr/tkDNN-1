@@ -542,7 +542,7 @@ dnnType* NetworkRT::infer(dataDim_t &dim, dnnType* data) {
     contextRT->execute(batches, buffersRT);
     // checkCuda(cudaMemcpyAsync(output, buffersRT[buf_output_idx], batches*output_dim.tot()*sizeof(dnnType), cudaMemcpyDeviceToDevice, stream));
     checkCuda(cudaMemcpy(output, buffersRT[buf_output_idx], batches*output_dim.tot()*sizeof(dnnType), cudaMemcpyDeviceToDevice));
-    checkCuda(cudaStreamSynchronize(stream));
+    // checkCuda(cudaStreamSynchronize(stream));
 
     dim = output_dim;
     dim.n = batches;

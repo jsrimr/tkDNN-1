@@ -11,6 +11,14 @@ n = 1 # 몇번 반복할 것인지
 # build/test_custom_cfgbuilder tests/darknet/cfg/target_*.cfg [n_iteration]
 
 def run_nsys(cfg, n):
+    # tests/darknet/cfg/target_5_6.cfg
+    # build/target_5_6.cfg_fp16.rt
+    basename = os.path.basename(cfg)
+    path = os.path.join('build', basename)
+    if os.path.exists(path + "_fp16.rt"):
+        os.remove(path + "_fp16.rt")
+        print(f"removed {basename}_fp16.rt")
+    
     process = subprocess.run(
             ['build/test_custom_cfgbuilder',f'{cfg}', str(n)],
             stdout=subprocess.PIPE,
